@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_tabs/src/modified/modified_tab_bar.dart'
-    show ModifiedTabBarView;
+    show ModifiedTabBar, ModifiedTabBarView;
 
 class DynamicTabsWrapper extends StatefulWidget {
   const DynamicTabsWrapper(
@@ -66,8 +66,8 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
   Widget build(BuildContext context) {
     return widget.builder(
         context,
-        TabBar(
-            // onScrollControllerInit: (value) {},
+        ModifiedTabBar(
+            onScrollControllerInit: (value) {},
             isScrollable: true,
             controller: widget.controller._tabController,
             tabs: List.generate(widget.controller._setTabs(widget.tabs).length,
@@ -77,6 +77,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                 return widget.tabBuilder!(context, item);
               } else {
                 return Tab(
+                  key: item._key,
                   child: Row(
                     children: [
                       Text(item.label),
@@ -169,7 +170,6 @@ class DynamicTabsController extends ChangeNotifier {
     }
     _children = children;
     _checkIdentifiers();
-
     return _currentTabViews;
   }
 
@@ -178,22 +178,30 @@ class DynamicTabsController extends ChangeNotifier {
       throw Exception('Duplicate identifiers provided.');
     }
     _tabs = tabs;
+    _forEach<DynamicTab>(_tabs, (value) {
+      value._key = GlobalKey();
+    });
     return _currentTabs;
   }
 
   void closeTabs(List<String> tabs, {String? switchToIdentifier}) {
     final toRemove = List<String>.from(tabs);
+    final activeString = activeIdentifier;
     _forEach<String>(tabs, (value) {
       if (!_activeStrings.contains(value)) {
         toRemove.remove(value);
       }
     });
-
-    _forEach<String>(toRemove, (value) {
-      closeTab(value,
-          switchToIdentifier: switchToIdentifier ??
-              _activeStrings.firstWhere((element) => !tabs.contains(element)));
-    });
+    if (toRemove.contains(activeString)) {
+      final index =
+          switchToIdentifier != null && _getTabIndex(switchToIdentifier) > -1
+              ? _getTabIndex(switchToIdentifier)
+              : 0;
+      _animateTo(index);
+    }
+    _forEach<String>(toRemove, _activeStrings.remove);
+    _updateTabController(
+        toRemove.contains(activeString) ? null : _getTabIndex(activeString));
   }
 
   void closeTab(String identifier,
@@ -220,27 +228,28 @@ class DynamicTabsController extends ChangeNotifier {
 
   void _removeTab(String identifier, {String? switchToIdentifier}) async {
     final currentActiveString = activeIdentifier;
-    if (currentActiveString == identifier || switchToIdentifier != null) {
-      final prevIndex = _getTabIndex(identifier) > 0
-          ? _getTabIndex(identifier) - 1
-          : _getTabIndex(identifier) + 1;
-      final index =
-          switchToIdentifier != null && _getTabIndex(switchToIdentifier) > -1
-              ? _getTabIndex(switchToIdentifier)
-              : currentActiveString == identifier
-                  ? prevIndex
-                  : _getTabIndex(currentActiveString);
-      _tabController.animateTo(index);
-    }
+    final prevIndex = _getTabIndex(identifier) > 0
+        ? _getTabIndex(identifier) - 1
+        : _getTabIndex(identifier) + 1;
     _activeStrings.remove(identifier);
+    final index =
+        switchToIdentifier != null && _getTabIndex(switchToIdentifier) > -1
+            ? _getTabIndex(switchToIdentifier)
+            : currentActiveString == identifier
+                ? prevIndex
+                : _getTabIndex(currentActiveString);
+    _animateTo(index);
     _updateTabController(null);
   }
 
   void openTabs(List<String> identifiers, {bool switchToLastTab = true}) {
     for (var i = 0; i < identifiers.length; i++) {
-      openTab(identifiers[i],
-          switchToTab: i == identifiers.length - 1 && switchToLastTab);
+      if (!_activeStrings.contains(identifiers[i])) {
+        _activeStrings.add(identifiers[i]);
+      }
     }
+    _updateTabController(
+        switchToLastTab ? _getTabIndex(identifiers.last) : activeIndex);
   }
 
   void openTab(String identifier, {bool switchToTab = true}) {
@@ -249,22 +258,36 @@ class DynamicTabsController extends ChangeNotifier {
       _updateTabController(
           switchToTab ? _getTabIndex(identifier) : activeIndex);
     } else {
-      _controller.animateTo(_getTabIndex(identifier));
+      _animateTo(_getTabIndex(identifier));
     }
   }
 
-  void _updateTabController([int? index = 0]) {
+  void _updateTabController([int? index = 0]) async {
     final prevIndex =
         _controller.index < _currentTabs.length ? _controller.index : 0;
+    await _waitForAnimation();
     _controller = TabController(
         length: _currentTabs.length, vsync: _vsync, initialIndex: prevIndex);
     notifyListeners();
     if (index != null) {
-      Future.delayed(
-        const Duration(milliseconds: 10),
-      ).then((value) {
-        _controller.animateTo(index);
-      });
+      _animateTo(index);
+      await _waitForAnimation();
+      if (_getTab(_activeStrings[index])._key.currentContext != null) {
+        Scrollable.ensureVisible(
+            _getTab(_activeStrings[index])._key.currentContext!);
+      }
+    }
+  }
+
+  Future _waitForAnimation() async {
+    while (_tabController.indexIsChanging) {
+      await Future.delayed(const Duration(milliseconds: 1));
+    }
+  }
+
+  void _animateTo(int index) {
+    if (index > -1) {
+      _tabController.animateTo(index);
     }
   }
 
@@ -304,6 +327,7 @@ class DynamicTab {
       : identifier = identifier ?? label;
   final String label;
   final String identifier;
+  late GlobalKey _key;
   final bool isDismissible;
   final bool isInitiallyActive;
 }

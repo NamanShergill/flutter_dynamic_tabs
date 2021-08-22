@@ -24,6 +24,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final DynamicTabsController dynamicTabsController = DynamicTabsController();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -31,7 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
         controller: dynamicTabsController,
         tabs: [
           DynamicTab(label: 'identifier', isInitiallyActive: true),
-          DynamicTab(label: '1', isDismissible: false),
+          DynamicTab(label: '1'),
           DynamicTab(label: '2'),
           DynamicTab(label: '3'),
           DynamicTab(label: '4'),
