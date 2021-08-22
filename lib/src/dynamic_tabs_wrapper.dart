@@ -228,9 +228,12 @@ class DynamicTabsController extends ChangeNotifier {
 
   void _removeTab(String identifier, {String? switchToIdentifier}) async {
     final currentActiveString = activeIdentifier;
-    final prevIndex = _getTabIndex(identifier) > 0
+    var prevIndex = _getTabIndex(identifier) > 0
         ? _getTabIndex(identifier) - 1
         : _getTabIndex(identifier) + 1;
+    if (prevIndex > _tabController.length - 1) {
+      prevIndex = 0;
+    }
     _activeStrings.remove(identifier);
     final index =
         switchToIdentifier != null && _getTabIndex(switchToIdentifier) > -1
