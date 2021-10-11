@@ -80,56 +80,54 @@ class Test extends StatefulWidget {
 
 class _TestState extends State<Test> with AutomaticKeepAliveClientMixin {
   @override
-  void initState() {
-    print('init');
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Column(
       children: [
-        Text(widget.id),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text('Tab ${widget.id}'),
+        ),
         TextButton(
             onPressed: () {
               widget.controller.openTab('1');
             },
-            child: Text('1')),
+            child: const Text('Open tab 1')),
         TextButton(
             onPressed: () {
               widget.controller.openTab('2');
             },
-            child: Text('2')),
+            child: const Text('Open tab 2')),
         TextButton(
             onPressed: () {
               widget.controller.openTab('3');
             },
-            child: Text('3')),
+            child: const Text('Open tab 3')),
         TextButton(
             onPressed: () {
               widget.controller.openTab('4');
             },
-            child: Text('4')),
+            child: const Text('Open tab 4')),
         TextButton(
             onPressed: () {
               widget.controller.openTab('5');
             },
-            child: Text('5')),
+            child: const Text('Open tab 5')),
         TextButton(
             onPressed: () {
               widget.controller.openTab('6');
             },
-            child: Text('6')),
+            child: const Text('Open tab 6')),
         TextButton(
             onPressed: () {
               widget.controller.closeTabs(['6', '5', '4']);
             },
-            child: Text('Close')),
+            child: const Text('Close tabs 4, 5, 6')),
         TextButton(
             onPressed: () {
               widget.controller.openTabs(['6', '5', '4']);
             },
-            child: Text('Open')),
+            child: const Text('Open tabs 4, 5, 6')),
       ],
     );
   }

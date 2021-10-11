@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_tabs/src/modified/modified_tab_bar.dart'
-    show ModifiedTabBar, ModifiedTabBarView;
+    show ModifiedTabBarView;
 
 class DynamicTabsWrapper extends StatefulWidget {
   const DynamicTabsWrapper(
@@ -66,8 +66,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
   Widget build(BuildContext context) {
     return widget.builder(
         context,
-        ModifiedTabBar(
-            onScrollControllerInit: (value) {},
+        TabBar(
             isScrollable: true,
             controller: widget.controller._tabController,
             tabs: List.generate(widget.controller._setTabs(widget.tabs).length,
@@ -228,9 +227,8 @@ class DynamicTabsController extends ChangeNotifier {
 
   void _removeTab(String identifier, {String? switchToIdentifier}) async {
     final currentActiveString = activeIdentifier;
-    var prevIndex = _getTabIndex(identifier) > 0
-        ? _getTabIndex(identifier) - 1
-        : _getTabIndex(identifier) + 1;
+    var prevIndex =
+        _getTabIndex(identifier) > 0 ? _getTabIndex(identifier) - 1 : 0;
     if (prevIndex > _tabController.length - 1) {
       prevIndex = 0;
     }
