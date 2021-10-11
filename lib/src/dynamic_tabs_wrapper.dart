@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_tabs/src/modified/modified_tab_bar.dart'
-    show ModifiedTabBarView;
+    show ModifiedTabBar, ModifiedTabBarView;
 
 class DynamicTabsWrapper extends StatefulWidget {
   const DynamicTabsWrapper(
@@ -66,50 +66,53 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
   Widget build(BuildContext context) {
     return widget.builder(
         context,
-        TabBar(
-            isScrollable: true,
-            controller: widget.controller._tabController,
-            tabs: List.generate(widget.controller._setTabs(widget.tabs).length,
-                (index) {
-              final item = widget.controller._currentTabs[index];
-              if (widget.tabBuilder != null) {
-                return widget.tabBuilder!(context, item);
-              } else {
-                return Tab(
-                  key: item._key,
-                  child: Row(
-                    children: [
-                      Text(item.label),
-                      if (item.isDismissible)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                widget.controller.closeTab(item.identifier,
-                                    showDialog: true);
-                              },
-                              onLongPress: () {
-                                widget.controller.closeTab(item.identifier);
-                              },
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10)),
-                              child: const Padding(
-                                padding: EdgeInsets.all(4.0),
-                                child: Icon(
-                                  Icons.close,
-                                  size: 15,
-                                ),
+        ModifiedTabBar(
+          isScrollable: true,
+          controller: widget.controller._tabController,
+          tabs: List.generate(widget.controller._setTabs(widget.tabs).length,
+              (index) {
+            final item = widget.controller._currentTabs[index];
+            if (widget.tabBuilder != null) {
+              return widget.tabBuilder!(context, item);
+            } else {
+              return Tab(
+                child: Row(
+                  children: [
+                    Text(item.label),
+                    if (item.isDismissible)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              widget.controller
+                                  .closeTab(item.identifier, showDialog: true);
+                            },
+                            onLongPress: () {
+                              widget.controller.closeTab(item.identifier);
+                            },
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10)),
+                            child: const Padding(
+                              padding: EdgeInsets.all(4.0),
+                              child: Icon(
+                                Icons.close,
+                                size: 15,
                               ),
                             ),
                           ),
-                        )
-                    ],
-                  ),
-                );
-              }
-            })),
+                        ),
+                      )
+                  ],
+                ),
+              );
+            }
+          }),
+          onScrollControllerInit: (value) {
+            widget.controller._updateScrollController(value);
+          },
+        ),
         ModifiedTabBarView(
             controller: widget.controller._controller,
             children: widget.controller._setTabViews(widget.tabViews)));
@@ -127,6 +130,10 @@ class DynamicTabsController extends ChangeNotifier {
   String get activeIdentifier => _activeStrings[activeIndex];
   late List<DynamicTabView> _children;
   late List<DynamicTab> _tabs;
+  late ScrollController _scrollController;
+  void _updateScrollController(ScrollController controller) {
+    _scrollController = controller;
+  }
 
   List<DynamicTab> get _currentTabs => _activeStrings.map(_getTab).toList();
 
@@ -177,9 +184,6 @@ class DynamicTabsController extends ChangeNotifier {
       throw Exception('Duplicate identifiers provided.');
     }
     _tabs = tabs;
-    _forEach<DynamicTab>(_tabs, (value) {
-      value._key = GlobalKey();
-    });
     return _currentTabs;
   }
 
@@ -273,10 +277,8 @@ class DynamicTabsController extends ChangeNotifier {
     if (index != null) {
       _animateTo(index);
       await _waitForAnimation();
-      if (_getTab(_activeStrings[index])._key.currentContext != null) {
-        Scrollable.ensureVisible(
-            _getTab(_activeStrings[index])._key.currentContext!);
-      }
+      _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
     }
   }
 
@@ -328,7 +330,6 @@ class DynamicTab {
       : identifier = identifier ?? label;
   final String label;
   final String identifier;
-  late GlobalKey _key;
   final bool isDismissible;
   final bool isInitiallyActive;
 }
