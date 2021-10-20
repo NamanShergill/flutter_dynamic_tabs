@@ -364,9 +364,11 @@ class DynamicTab {
       this.isFocusedOnInit = false,
       this.icon,
       this.iconMargin = const EdgeInsets.only(bottom: 10.0),
-      this.isInitiallyActive = false})
+      bool isInitiallyActive = false})
       : assert(label != null || identifier != null,
             'Label and identifier cannot be both null!'),
+        isInitiallyActive =
+            isFocusedOnInit ? isFocusedOnInit : isInitiallyActive,
         identifier = identifier ?? label!;
   final String? label;
   final Icon? icon;
