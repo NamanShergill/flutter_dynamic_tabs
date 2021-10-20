@@ -109,7 +109,12 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                 child: Row(
                   children: [
                     Padding(
-                      padding: item.childPadding,
+                      padding: EdgeInsets.only(
+                          left: item.childPadding.left,
+                          right:
+                              item.isDismissible ? 0 : item.childPadding.right,
+                          bottom: item.childPadding.bottom,
+                          top: item.childPadding.top),
                       child: item.child == null && item.label != null
                           ? Text(item.label!)
                           : item.child!,
@@ -375,7 +380,7 @@ class DynamicTab {
       this.closeButtonMargin = const EdgeInsets.symmetric(horizontal: 8),
       this.isFocusedOnInit = false,
       this.icon,
-      this.childPadding = const EdgeInsets.only(left: 16),
+      this.childPadding = const EdgeInsets.symmetric(horizontal: 16),
       this.iconMargin = const EdgeInsets.only(bottom: 10.0),
       bool isInitiallyActive = false})
       : assert(label != null || identifier != null,
