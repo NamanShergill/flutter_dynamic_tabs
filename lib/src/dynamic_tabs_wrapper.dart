@@ -102,35 +102,44 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
               return widget.tabBuilder!(context, item);
             } else {
               return Tab(
-                child: Row(
-                  children: [
-                    if (item.label != null) Text(item.label!),
-                    if (item.isDismissible)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              widget.controller
-                                  .closeTab(item.identifier, showDialog: true);
-                            },
-                            onLongPress: () {
-                              widget.controller.closeTab(item.identifier);
-                            },
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(10)),
-                            child: const Padding(
-                              padding: EdgeInsets.all(4.0),
-                              child: Icon(
-                                Icons.close,
-                                size: 15,
+                iconMargin: item.iconMargin,
+                height: item.height,
+                icon: item.icon,
+                key: item.key,
+                child: Padding(
+                  padding: item.padding,
+                  child: Row(
+                    children: [
+                      if (item.child != null) item.child!,
+                      if (item.child == null && item.label != null)
+                        Text(item.label!),
+                      if (item.isDismissible)
+                        Padding(
+                          padding: EdgeInsets.only(left: item.padding.right),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                widget.controller.closeTab(item.identifier,
+                                    showDialog: true);
+                              },
+                              onLongPress: () {
+                                widget.controller.closeTab(item.identifier);
+                              },
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(10)),
+                              child: const Padding(
+                                padding: EdgeInsets.all(4.0),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 15,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      )
-                  ],
+                        )
+                    ],
+                  ),
                 ),
               );
             }
@@ -359,20 +368,35 @@ class DynamicTab {
   DynamicTab(
       {required this.label,
       String? identifier,
+      this.child,
       this.isDismissible = true,
       this.key,
+      this.height,
       this.isFocusedOnInit = false,
       this.icon,
+      this.padding = const EdgeInsets.symmetric(horizontal: 8),
       this.iconMargin = const EdgeInsets.only(bottom: 10.0),
       bool isInitiallyActive = false})
       : assert(label != null || identifier != null,
             'Label and identifier cannot be both null!'),
+        assert(label != null || child != null || icon != null,
+            'All three cannot be null.'),
+        assert(label == null || child == null, 'Cannot provider both.'),
         isInitiallyActive =
             isFocusedOnInit ? isFocusedOnInit : isInitiallyActive,
         identifier = identifier ?? label!;
   final String? label;
+  final Widget? child;
   final Icon? icon;
   final Key? key;
+
+  /// The height of the [Tab].
+  ///
+  /// If null, the height will be calculated based on the content of the [Tab].  When `icon` is not
+  /// null along with `child` or `text`, the default height is 72.0 pixels. Without an `icon`, the
+  /// height is 46.0 pixels.
+  final double? height;
+  final EdgeInsets padding;
   final bool isFocusedOnInit;
   final String identifier;
   final bool isDismissible;
