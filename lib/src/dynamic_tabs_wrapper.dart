@@ -115,7 +115,8 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                         Text(item.label!),
                       if (item.isDismissible)
                         Padding(
-                          padding: EdgeInsets.only(left: item.padding.right),
+                          padding:
+                              EdgeInsets.only(left: item.padding.right / 2),
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
@@ -374,7 +375,7 @@ class DynamicTab {
       this.height,
       this.isFocusedOnInit = false,
       this.icon,
-      this.padding = const EdgeInsets.symmetric(horizontal: 8),
+      this.padding = const EdgeInsets.symmetric(horizontal: 16),
       this.iconMargin = const EdgeInsets.only(bottom: 10.0),
       bool isInitiallyActive = false})
       : assert(label != null || identifier != null,
