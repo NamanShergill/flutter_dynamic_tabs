@@ -106,41 +106,40 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                 height: item.height,
                 icon: item.icon,
                 key: item.key,
-                child: Padding(
-                  padding: item.padding,
-                  child: Row(
-                    children: [
-                      if (item.child != null) item.child!,
-                      if (item.child == null && item.label != null)
-                        Text(item.label!),
-                      if (item.isDismissible)
-                        Padding(
-                          padding:
-                              EdgeInsets.only(left: item.padding.right / 2),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                widget.controller.closeTab(item.identifier,
-                                    showDialog: true);
-                              },
-                              onLongPress: () {
-                                widget.controller.closeTab(item.identifier);
-                              },
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10)),
-                              child: const Padding(
-                                padding: EdgeInsets.all(4.0),
-                                child: Icon(
-                                  Icons.close,
-                                  size: 15,
-                                ),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: item.childPadding,
+                      child: item.child == null && item.label != null
+                          ? Text(item.label!)
+                          : item.child!,
+                    ),
+                    if (item.isDismissible)
+                      Padding(
+                        padding: item.closeButtonMargin,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              widget.controller
+                                  .closeTab(item.identifier, showDialog: true);
+                            },
+                            onLongPress: () {
+                              widget.controller.closeTab(item.identifier);
+                            },
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10)),
+                            child: const Padding(
+                              padding: EdgeInsets.all(4.0),
+                              child: Icon(
+                                Icons.close,
+                                size: 15,
                               ),
                             ),
                           ),
-                        )
-                    ],
-                  ),
+                        ),
+                      )
+                  ],
                 ),
               );
             }
@@ -373,9 +372,10 @@ class DynamicTab {
       this.isDismissible = true,
       this.key,
       this.height,
+      this.closeButtonMargin = const EdgeInsets.symmetric(horizontal: 8),
       this.isFocusedOnInit = false,
       this.icon,
-      this.padding = const EdgeInsets.symmetric(horizontal: 16),
+      this.childPadding = const EdgeInsets.only(left: 16),
       this.iconMargin = const EdgeInsets.only(bottom: 10.0),
       bool isInitiallyActive = false})
       : assert(label != null || identifier != null,
@@ -397,11 +397,12 @@ class DynamicTab {
   /// null along with `child` or `text`, the default height is 72.0 pixels. Without an `icon`, the
   /// height is 46.0 pixels.
   final double? height;
-  final EdgeInsets padding;
+  final EdgeInsets childPadding;
   final bool isFocusedOnInit;
   final String identifier;
   final bool isDismissible;
   final bool isInitiallyActive;
+  final EdgeInsets closeButtonMargin;
   final EdgeInsetsGeometry iconMargin;
 }
 
