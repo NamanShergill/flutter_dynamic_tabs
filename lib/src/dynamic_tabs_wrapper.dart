@@ -17,7 +17,7 @@ class DynamicTabsWrapper extends StatefulWidget {
     this.tabViewSettings,
   }) : super(key: key);
   final DynamicTabsController controller;
-  final Future<bool> Function(String idenitifier)? onTabClose;
+  final Future<bool> Function(String idenitifier, String? label)? onTabClose;
   final List<DynamicTab> tabs;
   final Widget Function(BuildContext context, DynamicTab tab)? tabBuilder;
   final List<DynamicTabView> tabViews;
@@ -43,11 +43,11 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
   void setupWidget() {
     widget.controller._setState(this);
     widget.controller._onClose = widget.onTabClose ??
-        (identifier) async {
+        (identifier, label) async {
           return showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              title: Text('Close $identifier?'),
+              title: Text('Close ${label ?? identifier}?'),
               actions: [
                 MaterialButton(
                   onPressed: () {
@@ -163,7 +163,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
 }
 
 class DynamicTabsController extends ChangeNotifier {
-  late Future<bool?> Function(String identifier) _onClose;
+  late Future<bool?> Function(String identifier, String? label) _onClose;
   late TickerProvider _vsync;
   late TabController _controller;
   TabController get _tabController => _controller;
@@ -260,7 +260,7 @@ class DynamicTabsController extends ChangeNotifier {
     if (_activeStrings.contains(identifier) &&
         _getTab(identifier).isDismissible) {
       if (showDialog) {
-        _onClose(identifier).then((value) {
+        _onClose(identifier, _getTab(identifier).label).then((value) {
           if (value == true) {
             _removeTab(identifier, switchToIdentifier: switchToIdentifier);
           }
