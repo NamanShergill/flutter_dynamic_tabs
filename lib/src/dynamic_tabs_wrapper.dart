@@ -1,18 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dynamic_tabs/src/models/dynamic_tab_settings.dart';
 import 'package:flutter_dynamic_tabs/src/modified/modified_tab_bar.dart'
     show ModifiedTabBar, ModifiedTabBarView;
 
 class DynamicTabsWrapper extends StatefulWidget {
-  const DynamicTabsWrapper(
-      {required this.controller,
-      required this.tabs,
-      required this.tabViews,
-      required this.builder,
-      this.onTabClose,
-      this.tabBuilder,
-      Key? key})
-      : super(key: key);
+  const DynamicTabsWrapper({
+    required this.controller,
+    required this.tabs,
+    required this.tabViews,
+    required this.builder,
+    this.onTabClose,
+    this.tabBuilder,
+    this.tabBarSettings,
+    Key? key,
+    this.tabViewSettings,
+  }) : super(key: key);
   final DynamicTabsController controller;
   final Future<bool> Function(String idenitifier)? onTabClose;
   final List<DynamicTab> tabs;
@@ -20,6 +23,8 @@ class DynamicTabsWrapper extends StatefulWidget {
   final List<DynamicTabView> tabViews;
   final Widget Function(
       BuildContext context, PreferredSizeWidget tabBar, Widget tabView) builder;
+  final DynamicTabSettings? tabBarSettings;
+  final DynamicTabViewSettings? tabViewSettings;
   @override
   _DynamicTabsWrapperState createState() => _DynamicTabsWrapperState();
 }
@@ -64,10 +69,31 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
 
   @override
   Widget build(BuildContext context) {
+    final tabBar = widget.tabBarSettings ?? DynamicTabSettings();
+    final tabView = widget.tabViewSettings ?? DynamicTabViewSettings();
     return widget.builder(
         context,
         ModifiedTabBar(
+          key: tabBar.key,
           isScrollable: true,
+          indicator: tabBar.indicator,
+          indicatorSize: tabBar.indicatorSize,
+          labelColor: tabBar.labelColor,
+          labelPadding: tabBar.labelPadding,
+          labelStyle: tabBar.labelStyle,
+          unselectedLabelColor: tabBar.unselectedLabelColor,
+          unselectedLabelStyle: tabBar.unselectedLabelStyle,
+          automaticIndicatorColorAdjustment:
+              tabBar.automaticIndicatorColorAdjustment,
+          dragStartBehavior: tabBar.dragStartBehavior,
+          enableFeedback: tabBar.enableFeedback,
+          indicatorColor: tabBar.indicatorColor,
+          indicatorPadding: tabBar.indicatorPadding,
+          indicatorWeight: tabBar.indicatorWeight,
+          mouseCursor: tabBar.mouseCursor,
+          onTap: tabBar.onTap,
+          physics: tabBar.physics,
+          overlayColor: tabBar.overlayColor,
           controller: widget.controller._tabController,
           tabs: List.generate(widget.controller._setTabs(widget.tabs).length,
               (index) {
@@ -78,7 +104,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
               return Tab(
                 child: Row(
                   children: [
-                    Text(item.label),
+                    if (item.label != null) Text(item.label!),
                     if (item.isDismissible)
                       Padding(
                         padding: const EdgeInsets.only(left: 8),
@@ -115,6 +141,9 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
         ),
         ModifiedTabBarView(
             controller: widget.controller._controller,
+            key: tabView.key,
+            dragStartBehavior: tabView.dragStartBehavior,
+            physics: tabView.physics,
             children: widget.controller._setTabViews(widget.tabViews)));
   }
 }
@@ -144,12 +173,17 @@ class DynamicTabsController extends ChangeNotifier {
 
   void _setState(State<DynamicTabsWrapper> state) {
     _vsync = state as TickerProvider;
+    var initIndex = 0;
     _forEach<DynamicTab>(state.widget.tabs, (value) {
       if (value.isInitiallyActive || !value.isDismissible) {
         _activeStrings.add(value.identifier);
+        if (value.isFocusedOnInit) {
+          initIndex = _activeStrings.length - 1;
+        }
       }
     });
-    _controller = TabController(length: _activeStrings.length, vsync: _vsync);
+    _controller = TabController(
+        length: _activeStrings.length, vsync: _vsync, initialIndex: initIndex);
   }
 
   void _checkIdentifiers() {
@@ -326,12 +360,22 @@ class DynamicTab {
       {required this.label,
       String? identifier,
       this.isDismissible = true,
+      this.key,
+      this.isFocusedOnInit = false,
+      this.icon,
+      this.iconMargin = const EdgeInsets.only(bottom: 10.0),
       this.isInitiallyActive = false})
-      : identifier = identifier ?? label;
-  final String label;
+      : assert(label != null || identifier != null,
+            'Label and identifier cannot be both null!'),
+        identifier = identifier ?? label!;
+  final String? label;
+  final Icon? icon;
+  final Key? key;
+  final bool isFocusedOnInit;
   final String identifier;
   final bool isDismissible;
   final bool isInitiallyActive;
+  final EdgeInsetsGeometry iconMargin;
 }
 
 class DynamicTabView {
