@@ -30,32 +30,37 @@ class _MyHomePageState extends State<MyHomePage> {
     return SafeArea(
       child: DynamicTabsWrapper(
         controller: dynamicTabsController,
-        tabs: [
-          DynamicTab(label: 'identifier', isInitiallyActive: true),
-          DynamicTab(label: '1'),
-          DynamicTab(label: '2'),
-          DynamicTab(label: '3'),
-          DynamicTab(label: '4'),
-          DynamicTab(label: '5'),
-          DynamicTab(label: '6'),
-        ],
-        tabViews: [
-          DynamicTabView(
-              identifier: 'identifier',
-              child: Test(dynamicTabsController, 'id')),
-          DynamicTabView(
-              identifier: '1',
-              child: InkWell(child: Test(dynamicTabsController, '1'))),
-          DynamicTabView(
-              identifier: '2', child: Test(dynamicTabsController, '2')),
-          DynamicTabView(
-              identifier: '3', child: Test(dynamicTabsController, '3')),
-          DynamicTabView(
-              identifier: '4', child: Test(dynamicTabsController, '4')),
-          DynamicTabView(
-              identifier: '5', child: Test(dynamicTabsController, '5')),
-          DynamicTabView(
-              identifier: '6', child: Test(dynamicTabsController, '6')),
+        tabsData: [
+          DynamicTabData(
+            dynamicTab: DynamicTab(label: 'identifier', isDismissible: false),
+            tabViewChild: Test(dynamicTabsController, 'id'),
+          ),
+          DynamicTabData(
+            dynamicTab: DynamicTab(label: '1', isInitiallyActive: true),
+            tabViewChild: InkWell(
+              child: Test(dynamicTabsController, '1'),
+            ),
+          ),
+          DynamicTabData(
+            dynamicTab: DynamicTab(label: '2'),
+            tabViewChild: Test(dynamicTabsController, '2'),
+          ),
+          DynamicTabData(
+            dynamicTab: DynamicTab(label: '3'),
+            tabViewChild: Test(dynamicTabsController, '3'),
+          ),
+          DynamicTabData(
+            dynamicTab: DynamicTab(label: '4'),
+            tabViewChild: Test(dynamicTabsController, '4'),
+          ),
+          DynamicTabData(
+            dynamicTab: DynamicTab(label: '5'),
+            tabViewChild: Test(dynamicTabsController, '5'),
+          ),
+          DynamicTabData(
+            dynamicTab: DynamicTab(label: '6'),
+            tabViewChild: Test(dynamicTabsController, '6'),
+          ),
         ],
         builder: (context, tabBar, tabView) {
           return Scaffold(

@@ -1,11 +1,33 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dynamic_tabs/flutter_dynamic_tabs.dart';
 import 'package:flutter_dynamic_tabs/src/models/dynamic_tab_settings.dart';
 import 'package:flutter_dynamic_tabs/src/modified/modified_tab_bar.dart'
     show ModifiedTabBar, ModifiedTabBarView;
 
+class DynamicTabData {
+  DynamicTabData({required this.dynamicTab, required this.tabViewChild})
+      : _dynamicTabView = DynamicTabView(
+            child: tabViewChild, identifier: dynamicTab.identifier);
+  final DynamicTab dynamicTab;
+  final Widget tabViewChild;
+  final DynamicTabView _dynamicTabView;
+}
+
 class DynamicTabsWrapper extends StatefulWidget {
-  const DynamicTabsWrapper({
+  DynamicTabsWrapper({
+    required this.controller,
+    required List<DynamicTabData> tabsData,
+    required this.builder,
+    this.onTabClose,
+    this.tabBuilder,
+    this.tabBarSettings,
+    Key? key,
+    this.tabViewSettings,
+  })  : tabs = tabsData.map((e) => e.dynamicTab).toList(),
+        tabViews = tabsData.map((e) => e._dynamicTabView).toList(),
+        super(key: key);
+  const DynamicTabsWrapper.segregated({
     required this.controller,
     required this.tabs,
     required this.tabViews,
@@ -107,12 +129,13 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                 icon: item.icon,
                 key: item.key,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Padding(
                       padding: EdgeInsets.only(
                           left: item.childPadding.left,
-                          right:
-                              item.isDismissible ? 0 : item.childPadding.right,
+                          right: item.childPadding.right,
                           bottom: item.childPadding.bottom,
                           top: item.childPadding.top),
                       child: item.child == null && item.label != null
@@ -121,7 +144,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                     ),
                     if (item.isDismissible)
                       Padding(
-                        padding: item.closeButtonMargin,
+                        padding: item.closeButtonPadding,
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
@@ -377,10 +400,10 @@ class DynamicTab {
       this.isDismissible = true,
       this.key,
       this.height,
-      this.closeButtonMargin = const EdgeInsets.symmetric(horizontal: 8),
+      this.closeButtonPadding = const EdgeInsets.only(left: 8),
       this.isFocusedOnInit = false,
       this.icon,
-      this.childPadding = const EdgeInsets.symmetric(horizontal: 16),
+      this.childPadding = const EdgeInsets.symmetric(horizontal: 8),
       this.iconMargin = const EdgeInsets.only(bottom: 10.0),
       bool isInitiallyActive = false})
       : assert(label != null || identifier != null,
@@ -407,12 +430,15 @@ class DynamicTab {
   final String identifier;
   final bool isDismissible;
   final bool isInitiallyActive;
-  final EdgeInsets closeButtonMargin;
+  final EdgeInsets closeButtonPadding;
   final EdgeInsetsGeometry iconMargin;
 }
 
 class DynamicTabView {
-  DynamicTabView({required this.identifier, required this.child});
+  DynamicTabView({
+    required this.child,
+    required this.identifier,
+  });
   final Widget child;
   final String identifier;
 }
