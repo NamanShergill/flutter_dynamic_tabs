@@ -37,6 +37,8 @@ class DynamicTabSettings {
     this.labelPadding,
     this.unselectedLabelColor,
     this.unselectedLabelStyle,
+    this.closeButtonPadding = const EdgeInsets.only(left: 8),
+    this.childPadding = const EdgeInsets.symmetric(horizontal: 8),
     this.dragStartBehavior = DragStartBehavior.start,
     this.overlayColor,
     this.mouseCursor,
@@ -198,4 +200,7 @@ class DynamicTabSettings {
   ///
   /// Defaults to matching platform conventions.
   final ScrollPhysics? physics;
+
+  final EdgeInsets childPadding;
+  final EdgeInsets closeButtonPadding;
 }

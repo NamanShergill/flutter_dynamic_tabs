@@ -133,18 +133,15 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(
-                          left: item.childPadding.left,
-                          right: item.childPadding.right,
-                          bottom: item.childPadding.bottom,
-                          top: item.childPadding.top),
+                      padding: item.childPadding ?? tabBar.childPadding,
                       child: item.child == null && item.label != null
                           ? Text(item.label!)
                           : item.child!,
                     ),
                     if (item.isDismissible)
                       Padding(
-                        padding: item.closeButtonPadding,
+                        padding: item.closeButtonPadding ??
+                            tabBar.closeButtonPadding,
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
@@ -400,10 +397,10 @@ class DynamicTab {
       this.isDismissible = true,
       this.key,
       this.height,
-      this.closeButtonPadding = const EdgeInsets.only(left: 8),
+      this.closeButtonPadding,
       this.isFocusedOnInit = false,
       this.icon,
-      this.childPadding = const EdgeInsets.symmetric(horizontal: 8),
+      this.childPadding,
       this.iconMargin = const EdgeInsets.only(bottom: 10.0),
       bool isInitiallyActive = false})
       : assert(label != null || identifier != null,
@@ -425,12 +422,12 @@ class DynamicTab {
   /// null along with `child` or `text`, the default height is 72.0 pixels. Without an `icon`, the
   /// height is 46.0 pixels.
   final double? height;
-  final EdgeInsets childPadding;
+  final EdgeInsets? childPadding;
   final bool isFocusedOnInit;
   final String identifier;
   final bool isDismissible;
   final bool isInitiallyActive;
-  final EdgeInsets closeButtonPadding;
+  final EdgeInsets? closeButtonPadding;
   final EdgeInsetsGeometry iconMargin;
 }
 
