@@ -134,9 +134,8 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                   children: [
                     Padding(
                       padding: item.childPadding ?? tabBar.childPadding,
-                      child: item.child == null && item.label != null
-                          ? Text(item.label!)
-                          : item.child!,
+                      child:
+                          item.child == null ? Text(item.label!) : item.child!,
                     ),
                     if (item.isDismissible)
                       Padding(
@@ -391,8 +390,8 @@ class DynamicTabsController extends ChangeNotifier {
 
 class DynamicTab {
   DynamicTab(
-      {this.label,
-      String? identifier,
+      {String? label,
+      required this.identifier,
       this.child,
       this.isDismissible = true,
       this.key,
@@ -403,14 +402,11 @@ class DynamicTab {
       this.childPadding,
       this.iconMargin = const EdgeInsets.only(bottom: 10.0),
       bool isInitiallyActive = false})
-      : assert(label != null || identifier != null,
-            'Label and identifier cannot be both null!'),
-        assert(label != null || child != null || icon != null,
-            'All three cannot be null.'),
-        assert(label == null || child == null, 'Cannot provide both.'),
+      : assert(label == null || child == null, 'Cannot provide both.'),
         isInitiallyActive =
             isFocusedOnInit ? isFocusedOnInit : isInitiallyActive,
-        identifier = identifier ?? label!;
+        label = label ?? identifier;
+
   final String? label;
   final Widget? child;
   final Icon? icon;

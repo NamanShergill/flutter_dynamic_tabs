@@ -32,33 +32,34 @@ class _MyHomePageState extends State<MyHomePage> {
         controller: dynamicTabsController,
         tabsData: [
           DynamicTabData(
-            dynamicTab: DynamicTab(label: 'identifier', isDismissible: false),
+            dynamicTab:
+                DynamicTab(identifier: 'identifier', isDismissible: false),
             tabViewChild: Test(dynamicTabsController, 'id'),
           ),
           DynamicTabData(
-            dynamicTab: DynamicTab(label: '1', isInitiallyActive: true),
+            dynamicTab: DynamicTab(identifier: '1', isInitiallyActive: true),
             tabViewChild: InkWell(
               child: Test(dynamicTabsController, '1'),
             ),
           ),
           DynamicTabData(
-            dynamicTab: DynamicTab(label: '2'),
+            dynamicTab: DynamicTab(identifier: '2'),
             tabViewChild: Test(dynamicTabsController, '2'),
           ),
           DynamicTabData(
-            dynamicTab: DynamicTab(label: '3'),
+            dynamicTab: DynamicTab(identifier: '3'),
             tabViewChild: Test(dynamicTabsController, '3'),
           ),
           DynamicTabData(
-            dynamicTab: DynamicTab(label: '4'),
+            dynamicTab: DynamicTab(identifier: '4'),
             tabViewChild: Test(dynamicTabsController, '4'),
           ),
           DynamicTabData(
-            dynamicTab: DynamicTab(label: '5'),
+            dynamicTab: DynamicTab(identifier: '5'),
             tabViewChild: Test(dynamicTabsController, '5'),
           ),
           DynamicTabData(
-            dynamicTab: DynamicTab(label: '6'),
+            dynamicTab: DynamicTab(identifier: '6'),
             tabViewChild: Test(dynamicTabsController, '6'),
           ),
         ],
