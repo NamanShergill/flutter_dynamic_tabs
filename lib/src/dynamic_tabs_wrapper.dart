@@ -391,7 +391,7 @@ class DynamicTabsController extends ChangeNotifier {
 
 class DynamicTab {
   DynamicTab(
-      {required this.label,
+      {this.label,
       String? identifier,
       this.child,
       this.isDismissible = true,
@@ -407,7 +407,7 @@ class DynamicTab {
             'Label and identifier cannot be both null!'),
         assert(label != null || child != null || icon != null,
             'All three cannot be null.'),
-        assert(label == null || child == null, 'Cannot provider both.'),
+        assert(label == null || child == null, 'Cannot provide both.'),
         isInitiallyActive =
             isFocusedOnInit ? isFocusedOnInit : isInitiallyActive,
         identifier = identifier ?? label!;
