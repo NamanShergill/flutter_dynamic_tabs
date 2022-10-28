@@ -5,32 +5,28 @@ import 'package:flutter_dynamic_tabs/src/models/dynamic_tab_settings.dart';
 import 'package:flutter_dynamic_tabs/src/modified/modified_tab_bar.dart'
     show ModifiedTabBar, ModifiedTabBarView;
 
-class DynamicTabData {
-  DynamicTabData({required this.dynamicTab, required this.tabViewChild})
-      : _dynamicTabView = DynamicTabView(
-            child: tabViewChild, identifier: dynamicTab.identifier);
-  final DynamicTab dynamicTab;
-  final Widget tabViewChild;
-  final DynamicTabView _dynamicTabView;
+class DynamicTab {
+  DynamicTab(
+      {required this.identifier,
+      required this.tabViewBuilder,
+      this.tab,
+      this.isDismissible = true,
+      this.isFocusedOnInit = false,
+      bool isInitiallyActive = false})
+      : isInitiallyActive =
+            isFocusedOnInit ? isFocusedOnInit : isInitiallyActive;
+  final String identifier;
+  final TabBarItem? tab;
+  final WidgetBuilder tabViewBuilder;
+  final bool isFocusedOnInit;
+  final bool isDismissible;
+  final bool isInitiallyActive;
 }
 
 class DynamicTabsWrapper extends StatefulWidget {
-  DynamicTabsWrapper({
-    required this.controller,
-    required List<DynamicTabData> tabsData,
-    required this.builder,
-    this.onTabClose,
-    this.tabBuilder,
-    this.tabBarSettings,
-    Key? key,
-    this.tabViewSettings,
-  })  : tabs = tabsData.map((e) => e.dynamicTab).toList(),
-        tabViews = tabsData.map((e) => e._dynamicTabView).toList(),
-        super(key: key);
-  const DynamicTabsWrapper.segregated({
+  const DynamicTabsWrapper({
     required this.controller,
     required this.tabs,
-    required this.tabViews,
     required this.builder,
     this.onTabClose,
     this.tabBuilder,
@@ -42,7 +38,6 @@ class DynamicTabsWrapper extends StatefulWidget {
   final Future<bool> Function(String idenitifier, String? label)? onTabClose;
   final List<DynamicTab> tabs;
   final Widget Function(BuildContext context, DynamicTab tab)? tabBuilder;
-  final List<DynamicTabView> tabViews;
   final Widget Function(
       BuildContext context, PreferredSizeWidget tabBar, Widget tabView) builder;
   final DynamicTabSettings? tabBarSettings;
@@ -58,6 +53,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
     widget.controller.addListener(() {
       setState(() {});
     });
+    widget.controller._setTabs(widget.tabs);
     setupWidget();
     super.initState();
   }
@@ -94,90 +90,97 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
     final tabBar = widget.tabBarSettings ?? DynamicTabSettings();
     final tabView = widget.tabViewSettings ?? DynamicTabViewSettings();
     return widget.builder(
-        context,
-        ModifiedTabBar(
-          key: tabBar.key,
-          isScrollable: true,
-          indicator: tabBar.indicator,
-          indicatorSize: tabBar.indicatorSize,
-          labelColor: tabBar.labelColor,
-          labelPadding: tabBar.labelPadding,
-          labelStyle: tabBar.labelStyle,
-          unselectedLabelColor: tabBar.unselectedLabelColor,
-          unselectedLabelStyle: tabBar.unselectedLabelStyle,
-          automaticIndicatorColorAdjustment:
-              tabBar.automaticIndicatorColorAdjustment,
-          dragStartBehavior: tabBar.dragStartBehavior,
-          enableFeedback: tabBar.enableFeedback,
-          indicatorColor: tabBar.indicatorColor,
-          indicatorPadding: tabBar.indicatorPadding,
-          indicatorWeight: tabBar.indicatorWeight,
-          mouseCursor: tabBar.mouseCursor,
-          onTap: tabBar.onTap,
-          physics: tabBar.physics,
-          overlayColor: tabBar.overlayColor,
-          controller: widget.controller._tabController,
-          tabs: List.generate(widget.controller._setTabs(widget.tabs).length,
-              (index) {
-            final item = widget.controller._currentTabs[index];
-            if (widget.tabBuilder != null) {
-              return widget.tabBuilder!(context, item);
-            } else {
-              return Tab(
-                iconMargin: item.iconMargin,
-                height: item.height,
-                icon: item.icon,
-                key: item.key,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+      context,
+      ModifiedTabBar(
+        key: tabBar.key,
+        isScrollable: true,
+        indicator: tabBar.indicator,
+        indicatorSize: tabBar.indicatorSize,
+        labelColor: tabBar.labelColor,
+        labelPadding: tabBar.labelPadding,
+        labelStyle: tabBar.labelStyle,
+        unselectedLabelColor: tabBar.unselectedLabelColor,
+        unselectedLabelStyle: tabBar.unselectedLabelStyle,
+        automaticIndicatorColorAdjustment:
+            tabBar.automaticIndicatorColorAdjustment,
+        dragStartBehavior: tabBar.dragStartBehavior,
+        enableFeedback: tabBar.enableFeedback,
+        indicatorColor: tabBar.indicatorColor,
+        indicatorPadding: tabBar.indicatorPadding,
+        indicatorWeight: tabBar.indicatorWeight,
+        mouseCursor: tabBar.mouseCursor,
+        onTap: tabBar.onTap,
+        physics: tabBar.physics,
+        overlayColor: tabBar.overlayColor,
+        controller: widget.controller._tabController,
+        tabs: List.generate(widget.controller._currentTabs.length, (index) {
+          final tabData = widget.controller._currentTabs[index];
+          final item = tabData.tab ?? TabBarItem();
+          if (widget.tabBuilder != null) {
+            return widget.tabBuilder!(context, tabData);
+          } else {
+            return Tab(
+              iconMargin: item.iconMargin,
+              height: item.height,
+              icon: item.icon,
+              key: item.key,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: item.childPadding ?? tabBar.childPadding,
+                    child: item.child == null
+                        ? Text(item.label ?? tabData.identifier)
+                        : item.child!,
+                  ),
+                  if (tabData.isDismissible)
                     Padding(
-                      padding: item.childPadding ?? tabBar.childPadding,
-                      child:
-                          item.child == null ? Text(item.label!) : item.child!,
-                    ),
-                    if (item.isDismissible)
-                      Padding(
-                        padding: item.closeButtonPadding ??
-                            tabBar.closeButtonPadding,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              widget.controller
-                                  .closeTab(item.identifier, showDialog: true);
-                            },
-                            onLongPress: () {
-                              widget.controller.closeTab(item.identifier);
-                            },
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(10)),
-                            child: const Padding(
-                              padding: EdgeInsets.all(4.0),
-                              child: Icon(
-                                Icons.close,
-                                size: 15,
-                              ),
+                      padding:
+                          item.closeButtonPadding ?? tabBar.closeButtonPadding,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            widget.controller
+                                .closeTab(tabData.identifier, showDialog: true);
+                          },
+                          onLongPress: () {
+                            widget.controller.closeTab(tabData.identifier);
+                          },
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(10)),
+                          child: const Padding(
+                            padding: EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 15,
                             ),
                           ),
                         ),
-                      )
-                  ],
-                ),
-              );
-            }
-          }),
-          onScrollControllerInit: (value) {
-            widget.controller._updateScrollController(value);
-          },
-        ),
-        ModifiedTabBarView(
-            controller: widget.controller._controller,
-            key: tabView.key,
-            dragStartBehavior: tabView.dragStartBehavior,
-            physics: tabView.physics,
-            children: widget.controller._setTabViews(widget.tabViews)));
+                      ),
+                    )
+                ],
+              ),
+            );
+          }
+        }),
+        onScrollControllerInit: (value) {
+          widget.controller._updateScrollController(value);
+        },
+      ),
+      ModifiedTabBarView(
+        controller: widget.controller._controller,
+        key: tabView.key,
+        dragStartBehavior: tabView.dragStartBehavior,
+        physics: tabView.physics,
+        children: widget.controller._currentTabs
+            .map(
+              (e) => e.tabViewBuilder.call(context),
+            )
+            .toList(),
+      ),
+    );
   }
 }
 
@@ -190,7 +193,6 @@ class DynamicTabsController extends ChangeNotifier {
   bool get indexIsChanging => _tabController.indexIsChanging;
   int get activeLength => _tabController.length;
   String get activeIdentifier => _activeStrings[activeIndex];
-  late List<DynamicTabView> _children;
   late List<DynamicTab> _tabs;
   late ScrollController _scrollController;
   void _updateScrollController(ScrollController controller) {
@@ -199,15 +201,12 @@ class DynamicTabsController extends ChangeNotifier {
 
   List<DynamicTab> get _currentTabs => _activeStrings.map(_getTab).toList();
 
-  List<Widget> get _currentTabViews =>
-      _activeStrings.map((e) => _getTabView(e).child).toList();
-
   final List<String> _activeStrings = [];
 
   void _setState(State<DynamicTabsWrapper> state) {
     _vsync = state as TickerProvider;
     var initIndex = 0;
-    _forEach<DynamicTab>(state.widget.tabs, (value) {
+    _forEach<DynamicTab>(_tabs, (value) {
       if (value.isInitiallyActive || !value.isDismissible) {
         _activeStrings.add(value.identifier);
         if (value.isFocusedOnInit) {
@@ -219,39 +218,29 @@ class DynamicTabsController extends ChangeNotifier {
         length: _activeStrings.length, vsync: _vsync, initialIndex: initIndex);
   }
 
-  void _checkIdentifiers() {
-    final tabStrings = _tabs.map((e) => e.identifier).toList();
-    final tabViewStrings = _children.map((e) => e.identifier).toList();
-    _forEach<String>(List.from(tabStrings), (value) {
-      if (tabViewStrings.contains(value)) {
-        tabViewStrings.remove(value);
-        tabStrings.remove(value);
-      }
-    });
+  // void _checkIdentifiers() {
+  //   final tabStrings = _tabs.map((e) => e.identifier).toList();
+  //   final tabViewStrings = _children.map((e) => e.identifier).toList();
+  //   _forEach<String>(List.from(tabStrings), (value) {
+  //     if (tabViewStrings.contains(value)) {
+  //       tabViewStrings.remove(value);
+  //       tabStrings.remove(value);
+  //     }
+  //   });
+  //
+  //   if (tabStrings.isNotEmpty) {
+  //     throw Exception('TabView for identifiers $tabStrings missing.');
+  //   }
+  //   if (tabViewStrings.isNotEmpty) {
+  //     throw Exception('Tab for identifiers $tabViewStrings missing.');
+  //   }
+  // }
 
-    if (tabStrings.isNotEmpty) {
-      throw Exception('TabView for identifiers $tabStrings missing.');
-    }
-    if (tabViewStrings.isNotEmpty) {
-      throw Exception('Tab for identifiers $tabViewStrings missing.');
-    }
-  }
-
-  List<Widget> _setTabViews(List<DynamicTabView> children) {
-    if (_hasDuplicates(children.map((e) => e.identifier).toList())) {
-      throw Exception('Duplicate identifiers provided.');
-    }
-    _children = children;
-    _checkIdentifiers();
-    return _currentTabViews;
-  }
-
-  List<DynamicTab> _setTabs(List<DynamicTab> tabs) {
+  void _setTabs(List<DynamicTab> tabs) {
     if (_hasDuplicates(tabs.map((e) => e.identifier).toList())) {
       throw Exception('Duplicate identifiers provided.');
     }
     _tabs = tabs;
-    return _currentTabs;
   }
 
   void closeTabs(List<String> tabs, {String? switchToIdentifier}) {
@@ -279,7 +268,7 @@ class DynamicTabsController extends ChangeNotifier {
     if (_activeStrings.contains(identifier) &&
         _getTab(identifier).isDismissible) {
       if (showDialog) {
-        _onClose(identifier, _getTab(identifier).label).then((value) {
+        _onClose(identifier, _getTab(identifier).tab?.label).then((value) {
           if (value == true) {
             _removeTab(identifier, switchToIdentifier: switchToIdentifier);
           }
@@ -379,33 +368,22 @@ class DynamicTabsController extends ChangeNotifier {
     }
   }
 
-  DynamicTabView _getTabView(String identifier) {
-    return _children.firstWhere((element) => element.identifier == identifier);
-  }
-
   bool _hasDuplicates(List<String> items) {
     return items.length != items.toSet().length;
   }
 }
 
-class DynamicTab {
-  DynamicTab(
-      {String? label,
-      required this.identifier,
-      this.child,
-      this.isDismissible = true,
-      this.key,
-      this.height,
-      this.closeButtonPadding,
-      this.isFocusedOnInit = false,
-      this.icon,
-      this.childPadding,
-      this.iconMargin = const EdgeInsets.only(bottom: 10.0),
-      bool isInitiallyActive = false})
-      : assert(label == null || child == null, 'Cannot provide both.'),
-        isInitiallyActive =
-            isFocusedOnInit ? isFocusedOnInit : isInitiallyActive,
-        label = label ?? identifier;
+class TabBarItem {
+  TabBarItem({
+    this.label,
+    this.child,
+    this.key,
+    this.height,
+    this.closeButtonPadding,
+    this.icon,
+    this.childPadding,
+    this.iconMargin = const EdgeInsets.only(bottom: 10.0),
+  }) : assert(label == null || child == null, 'Cannot provide both.');
 
   final String? label;
   final Widget? child;
@@ -419,21 +397,8 @@ class DynamicTab {
   /// height is 46.0 pixels.
   final double? height;
   final EdgeInsets? childPadding;
-  final bool isFocusedOnInit;
-  final String identifier;
-  final bool isDismissible;
-  final bool isInitiallyActive;
   final EdgeInsets? closeButtonPadding;
   final EdgeInsetsGeometry iconMargin;
-}
-
-class DynamicTabView {
-  DynamicTabView({
-    required this.child,
-    required this.identifier,
-  });
-  final Widget child;
-  final String identifier;
 }
 
 void _forEach<T>(List<T> items, ValueChanged<T> onIterate) {
