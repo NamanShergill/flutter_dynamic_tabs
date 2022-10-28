@@ -6,14 +6,15 @@ import 'package:flutter_dynamic_tabs/src/modified/modified_tab_bar.dart'
     show ModifiedTabBar, ModifiedTabBarView;
 
 class DynamicTab {
-  DynamicTab(
-      {required this.identifier,
-      required this.tabViewBuilder,
-      this.tab,
-      this.isDismissible = true,
-      this.isFocusedOnInit = false,
-      bool isInitiallyActive = false})
-      : isInitiallyActive =
+  DynamicTab({
+    required this.identifier,
+    required this.tabViewBuilder,
+    this.tab,
+    this.isDismissible = true,
+    this.isFocusedOnInit = false,
+    bool isInitiallyActive = false,
+    this.keepViewAlive = false,
+  }) : isInitiallyActive =
             isFocusedOnInit ? isFocusedOnInit : isInitiallyActive;
   final String identifier;
   final TabBarItem? tab;
@@ -21,6 +22,7 @@ class DynamicTab {
   final bool isFocusedOnInit;
   final bool isDismissible;
   final bool isInitiallyActive;
+  final bool keepViewAlive;
 }
 
 class DynamicTabsWrapper extends StatefulWidget {
@@ -174,11 +176,22 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
         key: tabView.key,
         dragStartBehavior: tabView.dragStartBehavior,
         physics: tabView.physics,
-        children: widget.controller._currentTabs
-            .map(
-              (e) => e.tabViewBuilder.call(context),
-            )
-            .toList(),
+        children: widget.controller._currentTabs.map(
+          (e) {
+            Widget getView() {
+              final view = e.tabViewBuilder.call(context);
+              if (e.keepViewAlive) {
+                return _KeepAliveWrapper(child: view);
+              }
+              return view;
+            }
+
+            return Container(
+              key: ValueKey('${e.identifier}TabView'),
+              child: getView(),
+            );
+          },
+        ).toList(),
       ),
     );
   }
@@ -406,4 +419,26 @@ void _forEach<T>(List<T> items, ValueChanged<T> onIterate) {
     final item = items[i];
     onIterate(item);
   }
+}
+
+class _KeepAliveWrapper extends StatefulWidget {
+  const _KeepAliveWrapper({Key? key, required this.child, this.keepAlive})
+      : super(key: key);
+  final Widget child;
+  final bool Function()? keepAlive;
+
+  @override
+  State<_KeepAliveWrapper> createState() => _KeepAliveWrapperState();
+}
+
+class _KeepAliveWrapperState extends State<_KeepAliveWrapper>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
+  }
+
+  @override
+  bool get wantKeepAlive => widget.keepAlive?.call() ?? true;
 }
