@@ -42,12 +42,12 @@ class _TabStyle extends AnimatedWidget {
     // the same value of inherit. Force that to be inherit=true here.
     final TextStyle defaultStyle = (labelStyle ??
             tabBarTheme.labelStyle ??
-            themeData.primaryTextTheme.bodyText1!)
+            themeData.primaryTextTheme.bodyLarge!)
         .copyWith(inherit: true);
     final TextStyle defaultUnselectedStyle = (unselectedLabelStyle ??
             tabBarTheme.unselectedLabelStyle ??
             labelStyle ??
-            themeData.primaryTextTheme.bodyText1!)
+            themeData.primaryTextTheme.bodyLarge!)
         .copyWith(inherit: true);
     final TextStyle textStyle = selected
         ? TextStyle.lerp(defaultStyle, defaultUnselectedStyle, animation.value)!
@@ -56,7 +56,7 @@ class _TabStyle extends AnimatedWidget {
 
     final Color selectedColor = labelColor ??
         tabBarTheme.labelColor ??
-        themeData.primaryTextTheme.bodyText1!.color!;
+        themeData.primaryTextTheme.bodyLarge!.color!;
     final Color unselectedColor = unselectedLabelColor ??
         tabBarTheme.unselectedLabelColor ??
         selectedColor.withAlpha(0xB2); // 70% alpha
@@ -687,7 +687,7 @@ class ModifiedTabBar extends StatefulWidget implements PreferredSizeWidget {
   /// opacity unless [unselectedLabelColor] is non-null.
   ///
   /// If this parameter is null, then the color of the [ThemeData.primaryTextTheme]'s
-  /// bodyText1 text color is used.
+  /// bodyLarge text color is used.
   final Color? labelColor;
 
   /// The color of unselected tab labels.
@@ -702,7 +702,7 @@ class ModifiedTabBar extends StatefulWidget implements PreferredSizeWidget {
   /// both selected and unselected label styles.
   ///
   /// If this property is null, then the text style of the
-  /// [ThemeData.primaryTextTheme]'s bodyText1 definition is used.
+  /// [ThemeData.primaryTextTheme]'s bodyLarge definition is used.
   final TextStyle? labelStyle;
 
   /// The padding added to each of the tab labels.
@@ -714,7 +714,7 @@ class ModifiedTabBar extends StatefulWidget implements PreferredSizeWidget {
   ///
   /// If this property is null, then the [labelStyle] value is used. If [labelStyle]
   /// is null, then the text style of the [ThemeData.primaryTextTheme]'s
-  /// bodyText1 definition is used.
+  /// bodyLarge definition is used.
   final TextStyle? unselectedLabelStyle;
 
   /// Defines the ink response focus, hover, and splash colors.

@@ -1,5 +1,7 @@
 include: package:flutter_lints/flutter.yaml
-
+analyzer:
+  exclude:
+    - example/**
 linter:
   rules:
     - always_require_non_null_named_parameters

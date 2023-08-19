@@ -119,7 +119,7 @@ class DynamicTabSettings {
   /// opacity unless [unselectedLabelColor] is non-null.
   ///
   /// If this parameter is null, then the color of the [ThemeData.primaryTextTheme]'s
-  /// bodyText1 text color is used.
+  /// bodyLarge text color is used.
   final Color? labelColor;
 
   /// The color of unselected tab labels.
@@ -134,7 +134,7 @@ class DynamicTabSettings {
   /// both selected and unselected label styles.
   ///
   /// If this property is null, then the text style of the
-  /// [ThemeData.primaryTextTheme]'s bodyText1 definition is used.
+  /// [ThemeData.primaryTextTheme]'s bodyLarge definition is used.
   final TextStyle? labelStyle;
 
   /// The padding added to each of the tab labels.
@@ -146,7 +146,7 @@ class DynamicTabSettings {
   ///
   /// If this property is null, then the [labelStyle] value is used. If [labelStyle]
   /// is null, then the text style of the [ThemeData.primaryTextTheme]'s
-  /// bodyText1 definition is used.
+  /// bodyLarge definition is used.
   final TextStyle? unselectedLabelStyle;
 
   /// Defines the ink response focus, hover, and splash colors.
