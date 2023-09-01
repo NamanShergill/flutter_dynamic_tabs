@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_tabs/flutter_dynamic_tabs.dart';
 import 'package:flutter_dynamic_tabs/src/models/dynamic_tab_settings.dart';
@@ -12,7 +11,7 @@ class DynamicTab {
     this.tab,
     this.isDismissible = true,
     this.isFocusedOnInit = false,
-    bool isInitiallyActive = false,
+    final bool isInitiallyActive = false,
     this.keepViewAlive = false,
   }) : isInitiallyActive =
             isFocusedOnInit ? isFocusedOnInit : isInitiallyActive;
@@ -33,7 +32,7 @@ class DynamicTabsWrapper extends StatefulWidget {
     this.onTabClose,
     this.tabBuilder,
     this.tabBarSettings,
-    Key? key,
+    final Key? key,
     this.tabViewSettings,
   }) : super(key: key);
   final DynamicTabsController controller;
@@ -41,9 +40,13 @@ class DynamicTabsWrapper extends StatefulWidget {
   final List<DynamicTab> tabs;
   final Widget Function(BuildContext context, DynamicTab tab)? tabBuilder;
   final Widget Function(
-      BuildContext context, PreferredSizeWidget tabBar, Widget tabView) builder;
+    BuildContext context,
+    PreferredSizeWidget tabBar,
+    Widget tabView,
+  ) builder;
   final DynamicTabSettings? tabBarSettings;
   final DynamicTabViewSettings? tabViewSettings;
+
   @override
   _DynamicTabsWrapperState createState() => _DynamicTabsWrapperState();
 }
@@ -63,32 +66,30 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
   void setupWidget() {
     widget.controller._setState(this);
     widget.controller._onClose = widget.onTabClose ??
-        (identifier, label) async {
-          return showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text('Close ${label ?? identifier}?'),
-              actions: [
-                MaterialButton(
-                  onPressed: () {
-                    Navigator.pop(context, false);
-                  },
-                  child: const Text('Cancel'),
-                ),
-                MaterialButton(
-                  onPressed: () {
-                    Navigator.pop(context, true);
-                  },
-                  child: const Text('Confirm'),
-                )
-              ],
-            ),
-          );
-        };
+        (final identifier, final label) async => showDialog<bool>(
+              context: context,
+              builder: (final context) => AlertDialog(
+                title: Text('Close ${label ?? identifier}?'),
+                actions: [
+                  MaterialButton(
+                    onPressed: () {
+                      Navigator.pop(context, false);
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  MaterialButton(
+                    onPressed: () {
+                      Navigator.pop(context, true);
+                    },
+                    child: const Text('Confirm'),
+                  ),
+                ],
+              ),
+            );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     final tabBar = widget.tabBarSettings ?? DynamicTabSettings();
     final tabView = widget.tabViewSettings ?? DynamicTabViewSettings();
     return widget.builder(
@@ -115,7 +116,8 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
         physics: tabBar.physics,
         overlayColor: tabBar.overlayColor,
         controller: widget.controller._tabController,
-        tabs: List.generate(widget.controller._currentTabs.length, (index) {
+        tabs:
+            List.generate(widget.controller._currentTabs.length, (final index) {
           final tabData = widget.controller._currentTabs[index];
           final item = tabData.tab ?? TabBarItem();
           if (widget.tabBuilder != null) {
@@ -153,7 +155,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                           borderRadius:
                               const BorderRadius.all(Radius.circular(10)),
                           child: const Padding(
-                            padding: EdgeInsets.all(4.0),
+                            padding: EdgeInsets.all(4),
                             child: Icon(
                               Icons.close,
                               size: 15,
@@ -161,13 +163,13 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                           ),
                         ),
                       ),
-                    )
+                    ),
                 ],
               ),
             );
           }
         }),
-        onScrollControllerInit: (value) {
+        onScrollControllerInit: (final value) {
           widget.controller._updateScrollController(value);
         },
       ),
@@ -177,7 +179,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
         dragStartBehavior: tabView.dragStartBehavior,
         physics: tabView.physics,
         children: widget.controller._currentTabs.map(
-          (e) {
+              (final e) {
             Widget getView() {
               final view = e.tabViewBuilder.call(context);
               if (e.keepViewAlive) {
@@ -201,14 +203,20 @@ class DynamicTabsController extends ChangeNotifier {
   late Future<bool?> Function(String identifier, String? label) _onClose;
   late TickerProvider _vsync;
   late TabController _controller;
+
   TabController get _tabController => _controller;
+
   int get activeIndex => _tabController.index;
+
   bool get indexIsChanging => _tabController.indexIsChanging;
+
   int get activeLength => _tabController.length;
+
   String get activeIdentifier => _activeStrings[activeIndex];
   late List<DynamicTab> _tabs;
   late ScrollController _scrollController;
-  void _updateScrollController(ScrollController controller) {
+
+  void _updateScrollController(final ScrollController controller) {
     _scrollController = controller;
   }
 
@@ -216,10 +224,10 @@ class DynamicTabsController extends ChangeNotifier {
 
   final List<String> _activeStrings = [];
 
-  void _setState(State<DynamicTabsWrapper> state) {
+  void _setState(final State<DynamicTabsWrapper> state) {
     _vsync = state as TickerProvider;
     var initIndex = 0;
-    _forEach<DynamicTab>(_tabs, (value) {
+    _forEach<DynamicTab>(_tabs, (final value) {
       if (value.isInitiallyActive || !value.isDismissible) {
         _activeStrings.add(value.identifier);
         if (value.isFocusedOnInit) {
@@ -228,7 +236,10 @@ class DynamicTabsController extends ChangeNotifier {
       }
     });
     _controller = TabController(
-        length: _activeStrings.length, vsync: _vsync, initialIndex: initIndex);
+      length: _activeStrings.length,
+      vsync: _vsync,
+      initialIndex: initIndex,
+    );
   }
 
   // void _checkIdentifiers() {
@@ -249,17 +260,17 @@ class DynamicTabsController extends ChangeNotifier {
   //   }
   // }
 
-  void _setTabs(List<DynamicTab> tabs) {
-    if (_hasDuplicates(tabs.map((e) => e.identifier).toList())) {
+  void _setTabs(final List<DynamicTab> tabs) {
+    if (_hasDuplicates(tabs.map((final e) => e.identifier).toList())) {
       throw Exception('Duplicate identifiers provided.');
     }
     _tabs = tabs;
   }
 
-  void closeTabs(List<String> tabs, {String? switchToIdentifier}) {
+  void closeTabs(final List<String> tabs, {final String? switchToIdentifier}) {
     final toRemove = List<String>.from(tabs);
     final activeString = activeIdentifier;
-    _forEach<String>(tabs, (value) {
+    _forEach<String>(tabs, (final value) {
       if (!_activeStrings.contains(value)) {
         toRemove.remove(value);
       }
@@ -273,15 +284,20 @@ class DynamicTabsController extends ChangeNotifier {
     }
     _forEach<String>(toRemove, _activeStrings.remove);
     _updateTabController(
-        toRemove.contains(activeString) ? null : _getTabIndex(activeString));
+      toRemove.contains(activeString) ? null : _getTabIndex(activeString),
+    );
   }
 
-  void closeTab(String identifier,
-      {bool showDialog = false, String? switchToIdentifier}) {
+  void closeTab(
+    final String identifier, {
+    final bool showDialog = false,
+    final String? switchToIdentifier,
+  }) {
     if (_activeStrings.contains(identifier) &&
         _getTab(identifier).isDismissible) {
       if (showDialog) {
-        _onClose(identifier, _getTab(identifier).tab?.label).then((value) {
+        _onClose(identifier, _getTab(identifier).tab?.label)
+            .then((final value) {
           if (value == true) {
             _removeTab(identifier, switchToIdentifier: switchToIdentifier);
           }
@@ -298,7 +314,8 @@ class DynamicTabsController extends ChangeNotifier {
     }
   }
 
-  void _removeTab(String identifier, {String? switchToIdentifier}) async {
+  Future<void> _removeTab(final String identifier,
+      {final String? switchToIdentifier}) async {
     final currentActiveString = activeIdentifier;
     var prevIndex =
         _getTabIndex(identifier) > 0 ? _getTabIndex(identifier) - 1 : 0;
@@ -313,41 +330,50 @@ class DynamicTabsController extends ChangeNotifier {
                 ? prevIndex
                 : _getTabIndex(currentActiveString);
     _animateTo(index);
-    _updateTabController(null);
+    await _updateTabController(null);
   }
 
-  void openTabs(List<String> identifiers, {bool switchToLastTab = true}) {
+  void openTabs(final List<String> identifiers,
+      {final bool switchToLastTab = true}) {
     for (var i = 0; i < identifiers.length; i++) {
       if (!_activeStrings.contains(identifiers[i])) {
         _activeStrings.add(identifiers[i]);
       }
     }
     _updateTabController(
-        switchToLastTab ? _getTabIndex(identifiers.last) : activeIndex);
+      switchToLastTab ? _getTabIndex(identifiers.last) : activeIndex,
+    );
   }
 
-  void openTab(String identifier, {bool switchToTab = true}) {
+  void openTab(final String identifier, {final bool switchToTab = true}) {
     if (!_activeStrings.contains(identifier)) {
       _activeStrings.add(identifier);
       _updateTabController(
-          switchToTab ? _getTabIndex(identifier) : activeIndex);
+        switchToTab ? _getTabIndex(identifier) : activeIndex,
+      );
     } else {
       _animateTo(_getTabIndex(identifier));
     }
   }
 
-  void _updateTabController([int? index = 0]) async {
+  Future<void> _updateTabController([final int? index = 0]) async {
     final prevIndex =
         _controller.index < _currentTabs.length ? _controller.index : 0;
     await _waitForAnimation();
     _controller = TabController(
-        length: _currentTabs.length, vsync: _vsync, initialIndex: prevIndex);
+      length: _currentTabs.length,
+      vsync: _vsync,
+      initialIndex: prevIndex,
+    );
     notifyListeners();
     if (index != null) {
       _animateTo(index);
       await _waitForAnimation();
-      _scrollController.animateTo(_scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 100), curve: Curves.easeIn);
+      await _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeIn,
+      );
     }
   }
 
@@ -357,33 +383,32 @@ class DynamicTabsController extends ChangeNotifier {
     }
   }
 
-  void _animateTo(int index) {
+  void _animateTo(final int index) {
     if (index > -1) {
       _tabController.animateTo(index);
     }
   }
 
-  int _getTabIndex(String identifier) {
-    return _currentTabs
-        .indexWhere((element) => element.identifier == identifier);
-  }
+  int _getTabIndex(final String identifier) => _currentTabs
+      .indexWhere((final element) => element.identifier == identifier);
 
-  DynamicTab _getTab(String identifier) {
+  DynamicTab _getTab(final String identifier) {
     try {
-      return _tabs.firstWhere((element) => element.identifier == identifier);
+      return _tabs
+          .firstWhere((final element) => element.identifier == identifier);
     } catch (e) {
       final temp = List.from(_activeStrings);
-      _forEach<DynamicTab>(_tabs, (value) {
+      _forEach<DynamicTab>(_tabs, (final value) {
         temp.remove(value.identifier);
       });
       throw Exception(
-          '$e\n\nAn active tab\'s identifier might have been changed during runtime. A hot reload/restoring the previous identifier might fix the issue.\n\nMissing active identifiers: $temp\n');
+        "$e\n\nAn active tab's identifier might have been changed during runtime. A hot reload/restoring the previous identifier might fix the issue.\n\nMissing active identifiers: $temp\n",
+      );
     }
   }
 
-  bool _hasDuplicates(List<String> items) {
-    return items.length != items.toSet().length;
-  }
+  bool _hasDuplicates(final List<String> items) =>
+      items.length != items.toSet().length;
 }
 
 class TabBarItem {
@@ -395,7 +420,7 @@ class TabBarItem {
     this.closeButtonPadding,
     this.icon,
     this.childPadding,
-    this.iconMargin = const EdgeInsets.only(bottom: 10.0),
+    this.iconMargin = const EdgeInsets.only(bottom: 10),
   }) : assert(label == null || child == null, 'Cannot provide both.');
 
   final String? label;
@@ -414,7 +439,7 @@ class TabBarItem {
   final EdgeInsetsGeometry iconMargin;
 }
 
-void _forEach<T>(List<T> items, ValueChanged<T> onIterate) {
+void _forEach<T>(final List<T> items, final ValueChanged<T> onIterate) {
   for (var i = 0; i < items.length; i++) {
     final item = items[i];
     onIterate(item);
@@ -422,8 +447,11 @@ void _forEach<T>(List<T> items, ValueChanged<T> onIterate) {
 }
 
 class _KeepAliveWrapper extends StatefulWidget {
-  const _KeepAliveWrapper({Key? key, required this.child, this.keepAlive})
-      : super(key: key);
+  const _KeepAliveWrapper({
+    required this.child,
+    final Key? key,
+    this.keepAlive,
+  }) : super(key: key);
   final Widget child;
   final bool Function()? keepAlive;
 
@@ -434,7 +462,7 @@ class _KeepAliveWrapper extends StatefulWidget {
 class _KeepAliveWrapperState extends State<_KeepAliveWrapper>
     with AutomaticKeepAliveClientMixin {
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     super.build(context);
     return widget.child;
   }
