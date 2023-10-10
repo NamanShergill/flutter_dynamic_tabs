@@ -143,7 +143,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
                       padding:
                           item.closeButtonPadding ?? tabBar.closeButtonPadding,
                       child: Material(
-                        color: Colors.transparent,
+                        // color: Colors.transparent,
                         child: InkWell(
                           onTap: () {
                             widget.controller
@@ -179,7 +179,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
         dragStartBehavior: tabView.dragStartBehavior,
         physics: tabView.physics,
         children: widget.controller._currentTabs.map(
-              (final e) {
+          (final e) {
             Widget getView() {
               final view = e.tabViewBuilder.call(context);
               if (e.keepViewAlive) {
