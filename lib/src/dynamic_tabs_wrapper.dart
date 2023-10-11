@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_tabs/flutter_dynamic_tabs.dart';
 import 'package:flutter_dynamic_tabs/src/models/dynamic_tab_settings.dart';
-import 'package:flutter_dynamic_tabs/src/modified/modified_tab_bar.dart'
-    show ModifiedTabBar, ModifiedTabBarView;
+import 'package:flutter_dynamic_tabs/src/modified/modified_tab_bar.dart';
 
 class DynamicTab {
   DynamicTab({
@@ -92,6 +91,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
   Widget build(final BuildContext context) {
     final tabBar = widget.tabBarSettings ?? DynamicTabSettings();
     final tabView = widget.tabViewSettings ?? DynamicTabViewSettings();
+    print(tabBar.indicatorColor);
     return widget.builder(
       context,
       ModifiedTabBar(
@@ -173,7 +173,7 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
           widget.controller._updateScrollController(value);
         },
       ),
-      ModifiedTabBarView(
+      TabBarView(
         controller: widget.controller._controller,
         key: tabView.key,
         dragStartBehavior: tabView.dragStartBehavior,
