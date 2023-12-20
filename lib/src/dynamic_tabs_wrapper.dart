@@ -26,7 +26,7 @@ class DynamicTab {
 class DynamicTabsWrapper extends StatefulWidget {
   const DynamicTabsWrapper({
     required this.controller,
-    required this.tabs,
+    // required this.tabs,
     required this.builder,
     this.onTabClose,
     this.tabBuilder,
@@ -36,7 +36,8 @@ class DynamicTabsWrapper extends StatefulWidget {
   }) : super(key: key);
   final DynamicTabsController controller;
   final Future<bool> Function(String idenitifier, String? label)? onTabClose;
-  final List<DynamicTab> tabs;
+
+  // final List<DynamicTab> tabs;
   final Widget Function(BuildContext context, DynamicTab tab)? tabBuilder;
   final Widget Function(
     BuildContext context,
@@ -50,20 +51,17 @@ class DynamicTabsWrapper extends StatefulWidget {
   _DynamicTabsWrapperState createState() => _DynamicTabsWrapperState();
 }
 
-class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
-    with TickerProviderStateMixin {
+class _DynamicTabsWrapperState extends State<DynamicTabsWrapper> {
   @override
   void initState() {
     widget.controller.addListener(() {
       setState(() {});
     });
-    widget.controller._setTabs(widget.tabs);
     setupWidget();
     super.initState();
   }
 
   void setupWidget() {
-    widget.controller._setState(this);
     widget.controller._onClose = widget.onTabClose ??
         (final identifier, final label) async => showDialog<bool>(
               context: context,
@@ -200,11 +198,18 @@ class _DynamicTabsWrapperState extends State<DynamicTabsWrapper>
 }
 
 class DynamicTabsController extends ChangeNotifier {
-  late Future<bool?> Function(String identifier, String? label) _onClose;
-  late TickerProvider _vsync;
-  late TabController _controller;
+  DynamicTabsController({
+    required this.vsync,
+    required this.tabs,
+  }) {
+    _initTabs(tabs);
+  }
 
-  TabController get _tabController => _controller;
+  late Future<bool?> Function(String identifier, String? label) _onClose;
+  final TickerProvider vsync;
+  TabController? _controller;
+
+  TabController get _tabController => _controller!;
 
   int get activeIndex => _tabController.index;
 
@@ -213,7 +218,7 @@ class DynamicTabsController extends ChangeNotifier {
   int get activeLength => _tabController.length;
 
   String get activeIdentifier => _activeStrings[activeIndex];
-  late List<DynamicTab> _tabs;
+  final List<DynamicTab> tabs;
   late ScrollController _scrollController;
 
   void _updateScrollController(final ScrollController controller) {
@@ -224,10 +229,20 @@ class DynamicTabsController extends ChangeNotifier {
 
   final List<String> _activeStrings = [];
 
-  void _setState(final State<DynamicTabsWrapper> state) {
-    _vsync = state as TickerProvider;
+  // void _reset() {
+  //   _activeStrings.clear();
+  //   _tabs.clear();
+  //   _controller?.dispose();
+  // }
+
+  void _initTabs(final List<DynamicTab> tabs) {
+    // _reset();
+    if (_hasDuplicates(tabs.map((final e) => e.identifier).toList())) {
+      throw Exception('Duplicate identifiers provided.');
+    }
+    // _tabs = tabs;
     var initIndex = 0;
-    _forEach<DynamicTab>(_tabs, (final value) {
+    _forEach<DynamicTab>(tabs, (final value) {
       if (value.isInitiallyActive || !value.isDismissible) {
         _activeStrings.add(value.identifier);
         if (value.isFocusedOnInit) {
@@ -237,7 +252,7 @@ class DynamicTabsController extends ChangeNotifier {
     });
     _controller = TabController(
       length: _activeStrings.length,
-      vsync: _vsync,
+      vsync: vsync,
       initialIndex: initIndex,
     );
   }
@@ -259,13 +274,6 @@ class DynamicTabsController extends ChangeNotifier {
   //     throw Exception('Tab for identifiers $tabViewStrings missing.');
   //   }
   // }
-
-  void _setTabs(final List<DynamicTab> tabs) {
-    if (_hasDuplicates(tabs.map((final e) => e.identifier).toList())) {
-      throw Exception('Duplicate identifiers provided.');
-    }
-    _tabs = tabs;
-  }
 
   void closeTabs(final List<String> tabs, {final String? switchToIdentifier}) {
     final toRemove = List<String>.from(tabs);
@@ -358,11 +366,11 @@ class DynamicTabsController extends ChangeNotifier {
 
   Future<void> _updateTabController([final int? index = 0]) async {
     final prevIndex =
-        _controller.index < _currentTabs.length ? _controller.index : 0;
+        _controller!.index < _currentTabs.length ? _controller!.index : 0;
     await _waitForAnimation();
     _controller = TabController(
       length: _currentTabs.length,
-      vsync: _vsync,
+      vsync: vsync,
       initialIndex: prevIndex,
     );
     notifyListeners();
@@ -394,11 +402,11 @@ class DynamicTabsController extends ChangeNotifier {
 
   DynamicTab _getTab(final String identifier) {
     try {
-      return _tabs
+      return tabs
           .firstWhere((final element) => element.identifier == identifier);
     } catch (e) {
       final temp = List.from(_activeStrings);
-      _forEach<DynamicTab>(_tabs, (final value) {
+      _forEach<DynamicTab>(tabs, (final value) {
         temp.remove(value.identifier);
       });
       throw Exception(
